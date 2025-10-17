@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\Seniunu-valdymo-sistema.Server.props" />
-</Project>

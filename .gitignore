@@ -1,0 +1,30 @@
+# .NET build artifacts
+bin/
+obj/
+Debug/
+Release/
+
+# IDE junk
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+# React / frontend
+node_modules/
+build/
+dist/
+.env
+.env.*
+
+# Logs & temp
+*.log
+*.tmp
+*.cache
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+EOF
