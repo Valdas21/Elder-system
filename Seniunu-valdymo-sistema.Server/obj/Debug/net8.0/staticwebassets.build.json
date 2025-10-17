@@ -1,0 +1,23 @@
+{
+  "Version": 1,
+  "Hash": "oqPcjh7M0hmGlAAPj73Mq31e08d026U1AVGqObu9LCQ=",
+  "Source": "Seniunu-valdymo-sistema.Server",
+  "BasePath": "_content/Seniunu-valdymo-sistema.Server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "C:\\Users\\valda\\source\\repos\\Seniunu-valdymo-sistema\\seniunu-valdymo-sistema.client\\seniunu-valdymo-sistema.client.esproj",
+      "Version": 2,
+      "Source": "seniunu-valdymo-sistema.client",
+      "GetPublishAssetsTargets": "GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

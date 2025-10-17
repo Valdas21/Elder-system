@@ -1,0 +1,6 @@
+@Seniunu_valdymo_sistema.Server_HostAddress = http://localhost:5275
+
+GET {{Seniunu_valdymo_sistema.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Seniunu-valdymo-sistema.Server.props" />
+</Project>
