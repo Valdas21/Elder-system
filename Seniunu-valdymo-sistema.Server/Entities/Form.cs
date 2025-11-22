@@ -13,13 +13,6 @@ namespace Seniunu_valdymo_sistema.Server.Entities
         public int Course { get; set; }
         [Column("fk_Adminid")]
         public int FkAdminId { get; set; }
-
-        public Form() { }
-        public Form(DateTime dateTime, int course, int FkAdminid) { 
-            this.Active = true;
-            this.Course = course;
-            this.CreateDate = dateTime;
-            this.FkAdminId = FkAdminid;
-        }
+        public ICollection<FormQuestion> FormQuestions { get; set; } = new List<FormQuestion>();
     }
 }
