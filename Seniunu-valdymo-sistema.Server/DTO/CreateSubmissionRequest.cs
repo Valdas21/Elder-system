@@ -14,10 +14,6 @@
     }
     public class UpdateSubmissionRequest
     {
-        // Optional: allow moving a submission to another elder (if you need this)
-        //public int? FkElderId { get; set; }
-
-        // Full replacement/upsert of responses for this submission
         public List<UpdateResponseDto> Responses { get; set; } = new();
     }
 

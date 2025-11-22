@@ -17,6 +17,7 @@ namespace Seniunu_valdymo_sistema.Server.Entities
         public Elder Elder { get; set; } = null!;
         [ForeignKey(nameof(FkFormId))]
         public Form Form { get; set; } = null!;
+        public ICollection<Response> Responses { get; set; } = new List<Response>();
         public Submission() { }
         public Submission(DateTime dateTime, int fkFormId, int fkElderId) { 
             this.FillDate = dateTime;
