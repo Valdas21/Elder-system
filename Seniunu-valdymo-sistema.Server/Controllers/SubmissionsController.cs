@@ -2,11 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using Seniunu_valdymo_sistema.Server.Entities;
 using Seniunu_valdymo_sistema.Server.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Seniunu_valdymo_sistema.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class SubmissionController : Controller
     {
         private readonly AppDbContext _context;
@@ -14,21 +16,32 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         {
             _context = context;
         }
+        [HttpGet("{id}/Responses")]
+        [Authorize(Roles = "elder,admin")]
+        public async Task<ActionResult<IEnumerable<Response>>> GetSubmissionResponses(int id)
+        {
+            var responses = await _context.Responses.Where(r => r.FkSubmissionId == id).ToListAsync();
+            if (responses == null || responses.Count == 0)
+                return NotFound("No responses found for the specified submission.");
+            return Ok(responses);
+        }
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin,elder")]
         public async Task<ActionResult> GetSubmission(int id)
         {
             var submission = await _context.Submissions.FindAsync(id);
-            if(submission == null)
+            if (submission == null)
             {
                 return NotFound("Submission not found.");
             }
             return Ok(submission);
         }
-        
+
         [HttpPost]
+        [Authorize(Roles = "elder")]
         public async Task<ActionResult<Submission>> CreateSubmission(CreateSubmissionRequest request)
         {
-            if(request == null)
+            if (request == null)
             {
                 return BadRequest("Invalid submission data.");
             }
@@ -39,7 +52,8 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
                 FkElderId = request.FkElderId
             };
             _context.Submissions.Add(submission);
-            if(request.Responses != null && request.Responses.Count > 0)
+            await _context.SaveChangesAsync();
+            if (request.Responses != null && request.Responses.Count > 0)
             {
                 foreach (var resp in request.Responses)
                 {
@@ -57,6 +71,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
 
         }
         [HttpPut("{id}")]
+        [Authorize(Roles = "elder")]
         public async Task<IActionResult> PutSubmission(int id, UpdateSubmissionRequest request)
         {
             var submission = await _context.Submissions.FindAsync(id);
@@ -109,10 +124,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
                 var toRemove = existing.Where(r => !incoming.ContainsKey(r.FkFormQuestionId)).ToList();
                 if (toRemove.Count > 0) _context.Responses.RemoveRange(toRemove);
 
-
                 await _context.SaveChangesAsync();
-
-                
             }
             return Ok("Updated submision successfuly");
         }
@@ -121,7 +133,8 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         /// Delete a submission (and its responses).
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult>DeleteSubmission(int id)
+        [Authorize(Roles = "elder")]
+        public async Task<IActionResult> DeleteSubmission(int id)
         {
             var submission = _context.Submissions.FirstOrDefault(s => s.Id == id);
             if (submission is null) return NotFound("Submission not found.");
@@ -137,12 +150,9 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             _context.Submissions.Remove(submission);
             await _context.SaveChangesAsync();
 
-            
+
             return Ok("Submission deleted successfully.");
-            
-            
         }
     }
-
 }
 

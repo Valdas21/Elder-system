@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Seniunu_valdymo_sistema.Server.Entities;
 
@@ -6,6 +7,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class QuestionsController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,12 +17,14 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<Question>>> GetQuestions()
         {
-            var questions = _context.Questions.ToList();
+            var questions = await _context.Questions.ToListAsync();
             return Ok(questions);
         }
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> CreateQuestion(Question question)
         {
             if (string.IsNullOrEmpty(question.Text))
@@ -32,6 +36,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return CreatedAtAction("CreateQuestion", question);
         }
         [HttpDelete]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteQuestion(int id)
         {
             var question = _context.Questions.Find(id);
@@ -49,6 +54,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return Ok("Question deleted successfully.");
         }
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<Question>> GetQuestionById(int id)
         {
             var question = await _context.Questions.SingleOrDefaultAsync(q => q.Id == id);
@@ -59,6 +65,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return Ok(question);
         }
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> PutQuestion(int id, string newText)
         {
             if (string.IsNullOrEmpty(newText))
