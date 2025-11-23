@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using Seniunu_valdymo_sistema.Server.DTO;
@@ -8,6 +9,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class FormsController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -16,6 +18,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             _context = context;
         }
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Form>>> GetForms()
         {
             var forms = await _context.Forms.ToListAsync();
@@ -24,6 +27,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return Ok(forms);
         }
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Form>> GetFormById(int id)
         {
             //var form = await _context.Forms.Include(f => f.FormQuestions).ThenInclude(fq => fq.Question)
@@ -36,6 +40,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return Ok(form);
         }
         [HttpGet("{id}/Questions")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Question>>> GetFormQuestions(int id)
         {
             var questions = await _context.FormQuestions.Where(fq => fq.FkFormId == id).Select(q => q.Question.Text).ToListAsync();
@@ -44,6 +49,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return Ok(questions);
         }
         [HttpGet("{id}/Submissions")]
+        [Authorize(Roles ="admin")]
         public async Task<ActionResult<IEnumerable<Submission>>> GetSubmissionsByFormId(int id)
         {
             var submission = await _context.Submissions.Where(s => s.FkFormId == id).ToListAsync();
@@ -52,6 +58,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return Ok(submission);
         }
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<Form>> CreateForm(CreateFormRequest request)
         {
             if (request == null || request.FkAdminId <= 0)
@@ -86,6 +93,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return CreatedAtAction("GetFormById", new { id = form.Id }, form);
         }
         [HttpPut("{id}")]
+        [Authorize(Roles ="admin")]
         public async Task<IActionResult> PutForm(int id, CreateFormRequest request)
         {
             var form = _context.Forms.FirstOrDefault(f => f.Id == id);
@@ -141,6 +149,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             return Ok("Form and all related data updated successfully.");
         }
         [HttpDelete("{id}")]
+        [Authorize(Roles ="admin")]
         public async Task<IActionResult> DeleteForm(int id)
         {
                 var form = await _context.Forms.FindAsync(id);
