@@ -7,8 +7,9 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import axios from 'axios';
 import AppBar from "./AppBars/AnonymousAppBar";
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Footer from "./Footers/Footer";
 
 interface RegistrationFormProps {
   name: string;
@@ -24,7 +25,7 @@ const initialFormState: RegistrationFormProps = {
   lastName: '',
   email: '',
   password: '',
-  role: 'elder',
+  role: '',
   course: 0,
 };
 
@@ -54,7 +55,7 @@ function Register() {
 
     try {
       console.log('Submitting form:', formState);
-      await axios.post('/api/register', formState);
+      await axios.post('/api/Users/register', formState);
       alert('Registration sent!');
     } catch (error) {
       console.error('Registration failed:', error);
@@ -65,86 +66,106 @@ function Register() {
   return (
     <div>
       <AppBar />
-      <Card>
-        <CardContent>
-          <Typography variant="h3" id="registration">
-            Registracija
-          </Typography>
-          <Typography margin={2}>
-            Užpildykite visus registracijos laukus
-          </Typography>
+      <Card
+  sx={{
+    width: 450,
+    margin: "80px auto",
+    padding: "32px 24px",
+    borderRadius: 3,
+    boxShadow: 3,
+  }}
+>
+  <CardContent>
+    <Typography variant="h4" sx={{ textAlign: "center", mb: 3 }}>
+      Registracija
+    </Typography>
 
-          {/* IMPORTANT: onSubmit on the form */}
-          <form onSubmit={handleSubmit}>
-            <div>
-              <TextField
-                name="name"
-                margin="normal"
-                label="Vardas"
-                required
-                value={formState.name}
-                onChange={handleChange('name')}
-              />
-            </div>
+    <form onSubmit={handleSubmit}>
+      <TextField
+        fullWidth
+        name="name"
+        label="Vardas"
+        margin="normal"
+        value={formState.name}
+        onChange={handleChange("name")}
+      />
 
-            <div>
-              <TextField
-                name="lastName"
-                margin="normal"
-                label="Pavardė"
-                required
-                value={formState.lastName}
-                onChange={handleChange('lastName')}
-              />
-            </div>
+      <TextField
+        fullWidth
+        name="lastName"
+        label="Pavardė"
+        margin="normal"
+        value={formState.lastName}
+        onChange={handleChange("lastName")}
+      />
 
-            <div>
-              <TextField
-                name="email"
-                margin="normal"
-                type="email"
-                label="El. paštas"
-                required
-                value={formState.email}
-                onChange={handleChange('email')}
-              />
-            </div>
+      <TextField
+        fullWidth
+        name="email"
+        label="El. paštas"
+        type="email"
+        margin="normal"
+        value={formState.email}
+        onChange={handleChange("email")}
+      />
 
-            <div>
-              <TextField
-                name="password"
-                margin="normal"
-                label="Slaptažodis"
-                type="password"
-                required
-                value={formState.password}
-                onChange={handleChange('password')}
-              />
-            </div>
+      <TextField
+        fullWidth
+        name="password"
+        label="Slaptažodis"
+        type="password"
+        margin="normal"
+        value={formState.password}
+        onChange={handleChange("password")}
+      />
 
-            <div>
-              <Select
-                labelId="role-label"
-                id="role"
-                name="role"
-                value={formState.role}
-                onChange={handleChange('role')}
-                sx={{ mt: 2, minWidth: 200 }}
-              >
-                <MenuItem value="elder">Seniūnas</MenuItem>
-                <MenuItem value="volunteer">Koordinatorius</MenuItem>
-              </Select>
-            </div>
+      {/* role select */}
+      <Select
+        fullWidth
+        required
+        name="role"
+        value={formState.role}
+        onChange={handleChange("role")}
+        displayEmpty
+        sx={{
+          mt: 2,
+        }}
+      >
+        <MenuItem value="elder">Seniūnas</MenuItem>
+        <MenuItem value="admin">Koordinatorius</MenuItem>
+      </Select>
 
-            {/* If/when you add a course field in the UI, use: onChange={handleChange('course')} */}
+      {/* course select */}
+      <Select
+        fullWidth
+        name="course"
+        required
+        value={formState.course.toString()}
+        onChange={handleChange("course")}
+        displayEmpty
+        sx={{ mt: 2 }}
+      >
+        <MenuItem value={1}>Pirmas</MenuItem>
+        <MenuItem value={2}>Antras</MenuItem>
+        <MenuItem value={3}>Trečias</MenuItem>
+        <MenuItem value={4}>Ketvirtas</MenuItem>
+      </Select>
 
-            <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-              Registruotis
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ mt: 3, height: 45 }}
+      >
+        Registruotis
+      </Button>
+    </form>
+    </CardContent>
+    </Card>
+      <Footer />
     </div>
+    
   );
 }
 
