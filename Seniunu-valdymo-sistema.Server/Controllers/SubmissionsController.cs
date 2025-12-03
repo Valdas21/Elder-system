@@ -9,10 +9,10 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class SubmissionController : Controller
+    public class SubmissionsController : Controller
     {
         private readonly AppDbContext _context;
-        public SubmissionController(AppDbContext context)
+        public SubmissionsController(AppDbContext context)
         {
             _context = context;
         }
@@ -44,6 +44,11 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             if (request == null)
             {
                 return BadRequest("Invalid submission data.");
+            }
+            bool anySubmission = await _context.Submissions.Where(f => f.FkElderId == request.FkElderId && f.FkFormId == request.FkFormId).AnyAsync();
+            if (anySubmission)
+            {
+                return BadRequest("Form already filtered by this elder");
             }
             var submission = new Submission
             {

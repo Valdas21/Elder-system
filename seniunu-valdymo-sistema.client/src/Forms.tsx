@@ -27,6 +27,7 @@ type FormItem = {
   createDate?: string;
   updatedAt?: string;
   course: number;
+  active: boolean;
   [key: string]: any;
 };
 
@@ -143,6 +144,7 @@ function Forms() {
               <TableRow>
                 <TableCell>Title</TableCell>
                 <TableCell>Date</TableCell>
+                <TableCell>Active</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -166,12 +168,13 @@ function Forms() {
                         <TableRow key={f.id ?? `${y}-${idx}`} hover>
                           <TableCell>{title}</TableCell>
                           <TableCell>{formatDate(rawDate)}</TableCell>
+                          <TableCell>{f.active ? "Yes" : "No"}</TableCell>
                           <TableCell align="right">
                             <Button
                               variant="contained"
                               size="small"
                               onClick={() => {
-                                if (f.id != null) navigate(`/Form/${f.id}`);
+                                if (f.id != null) navigate(`/Form/${f.id}`, { state: { active: f.active } });
                               }}
                             >
                               Open
