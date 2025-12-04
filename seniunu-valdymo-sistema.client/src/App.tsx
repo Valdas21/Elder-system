@@ -5,6 +5,8 @@ import Login from "./Login";
 import Elder from "./Elder";
 import Forms from "./Forms";
 import Form from "./Form";
+import Submissions from "./Submissions";
+import SubmissionResponses from "./SubmissionResponses";
 
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
       <Route path="/Elder" element={<Elder />} />
       <Route path="/Forms" element={<Forms />} />
       <Route path="/Form/:id" element={<Form />} />
+      <Route path="/Submissions" element={<Submissions />} />
+      <Route path="/Submissions/:id/Responses" element={<SubmissionResponses />} />
     </Routes>
   );
 }

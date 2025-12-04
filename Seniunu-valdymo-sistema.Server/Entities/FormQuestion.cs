@@ -18,7 +18,7 @@ namespace Seniunu_valdymo_sistema.Server.Entities
             this.FkQuestionId = FkQuestionId;
         }
         [ForeignKey(nameof(FkQuestionId))]
-        public Question Question { get; set; } 
+        public Question Question { get; set; } = null!;
         [ForeignKey(nameof(FkFormId))]
         public Form Form { get; set; } 
     }

@@ -30,6 +30,7 @@ function ElderAppBar() {
 
           <Button color="inherit" onClick={() => navigate("/Elder")}>Dashboard</Button>
           <Button color="inherit" onClick={() => navigate("/Forms")}>Forms</Button>
+          <Button color="inherit" onClick={() => navigate("/Submissions")}>Submissions</Button>
         </Box>
 
         <Box display="flex" gap={2}>

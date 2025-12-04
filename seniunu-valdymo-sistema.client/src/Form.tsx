@@ -35,6 +35,8 @@ function Form() {
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Add: track if elder has already submitted this form
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   const token = useMemo(() => localStorage.getItem("jwtToken") || "", []);
 
@@ -100,11 +102,42 @@ function Form() {
     };
   }, [id, token]);
 
+  // Add: check if current elder has already submitted this form
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!id || !elderId) return;
+      try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+        // Try a simple "exists" endpoint. Adjust to your API if different.
+        // If your API returns 200 with { exists: boolean } or 204, adapt accordingly.
+        const res = await axios.get(`/api/Submissions/ByFormAndElder`, {
+          params: { formId: id, elderId },
+          headers,
+        });
+        // Accept various response shapes
+        const exists =
+          res?.data?.exists === true ||
+          res?.status === 204 ||
+          (Array.isArray(res?.data) && res.data.length > 0);
+        if (mounted) setHasSubmitted(!!exists);
+      } catch {
+        // Fail-safe: do not block form if endpoint fails
+        if (mounted) setHasSubmitted(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [id, elderId, token]);
+
   const handleAnswerChange = (qid: string, val: string) => {
     setAnswers(prev => ({ ...prev, [qid]: val }));
   };
 
   const handleSubmit = async () => {
+    // Prevent submitting if already submitted
+    if (hasSubmitted) return;
     if (!id) return;
     setSubmitting(true);
     setSubmitError(null);
@@ -174,6 +207,11 @@ function Form() {
                       This form is inactive. Submissions are disabled.
                     </Alert>
                   )}
+                  {hasSubmitted && (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                      You have already submitted this form. Editing is disabled. Check submissions instead.
+                    </Alert>
+                  )}
                   {submitError && <Alert severity="error" sx={{ mb: 2 }}>{submitError}</Alert>}
                   {submitSuccess && <Alert severity="success" sx={{ mb: 2 }}>{submitSuccess}</Alert>}
                   <Box display="flex" flexDirection="column" gap={2}>
@@ -190,7 +228,7 @@ function Form() {
                             type="text"
                             value={answers[qid] ?? ""}
                             onChange={(e) => handleAnswerChange(qid, e.target.value)}
-                            disabled={!isActive}
+                            disabled={!isActive || hasSubmitted}
                             style={{
                               width: "100%",
                               padding: "10px",
@@ -204,7 +242,11 @@ function Form() {
                   </Box>
 
                   <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-                    <Button variant="contained" disabled={!isActive || submitting} onClick={handleSubmit}>
+                    <Button
+                      variant="contained"
+                      disabled={!isActive || hasSubmitted || submitting}
+                      onClick={handleSubmit}
+                    >
                       {submitting ? "Submitting..." : "Submit"}
                     </Button>
                   </Box>
