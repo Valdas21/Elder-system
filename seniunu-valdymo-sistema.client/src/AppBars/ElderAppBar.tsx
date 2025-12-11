@@ -22,8 +22,10 @@ function ElderAppBar() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
+  const dashboardPath = localStorage.getItem("role") === "admin" ? "/Admin" : "/Elder";
+
   const items = [
-    { text: "Dashboard", to: "/Elder" },
+    { text: "Dashboard", to: dashboardPath },
     { text: "Forms", to: "/Forms" },
     { text: "Submissions", to: "/Submissions" },
     { text: "Profile", to: "/Profile" },

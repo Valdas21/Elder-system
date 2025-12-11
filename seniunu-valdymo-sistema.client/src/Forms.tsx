@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import Api from "./axiosnew";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -107,7 +107,7 @@ function Forms() {
       setError(null);
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const res = await axios.get<FormItem[]>("/api/Forms", { headers });
+        const res = await Api.get<FormItem[]>("/api/Forms", { headers });
 
         const data = res.data;
         console.log("Fetched forms:", data);
@@ -347,7 +347,7 @@ function Forms() {
     setCreateOpen(true);
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      const res = await axios.get<Array<{ id: number; text?: string }>>("/api/Questions", { headers });
+      const res = await Api.get<Array<{ id: number; text?: string }>>("/api/Questions", { headers });
       setQuestions(Array.isArray(res.data) ? res.data : []);
     } catch (e: any) {
       setCreateError(e?.message || "Failed to load questions.");
@@ -381,7 +381,7 @@ function Forms() {
         CreateDate: new Date(createDate).toISOString(),
         QuestionIds: selectedQuestionIds,
       };
-      const res = await axios.post<FormItem>("/api/Forms", payload, { headers });
+      const res = await Api.post<FormItem>("/api/Forms", payload, { headers });
       const created = res.data;
       setForms(prev => [created, ...prev]);
       setCreateOpen(false);

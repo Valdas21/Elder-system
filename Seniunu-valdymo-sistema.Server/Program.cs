@@ -1,20 +1,27 @@
-using Microsoft.EntityFrameworkCore;
-using Seniunu_valdymo_sistema.Server;
-using Microsoft.Extensions.Configuration;
-using System.Text.Json.Serialization;
-using Seniunu_valdymo_sistema.Server.Infrastructure;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Seniunu_valdymo_sistema.Server;
+using Seniunu_valdymo_sistema.Server.Infrastructure;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1) Register services BEFORE Build()
-builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSingleton<TokenProvider>();
+// Make sure environment variables (Azure App Settings) are read
+builder.Configuration.AddEnvironmentVariables();
 
+//  Services 
+
+// Controllers + JSON options
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(x =>
+        x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+// Swagger JWT auth support
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     var jwtSecurityScheme = new OpenApiSecurityScheme
@@ -24,13 +31,14 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = JwtBearerDefaults.AuthenticationScheme,
-        Description = "Put **_ONLY_** your JWT Bearer token on textbox below!",
+        Description = "Put ONLY your JWT Bearer token in the text box below.",
         Reference = new OpenApiReference
         {
             Id = JwtBearerDefaults.AuthenticationScheme,
             Type = ReferenceType.SecurityScheme
         }
     };
+
     options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -38,55 +46,72 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
-    };
-});
+// Token provider
+builder.Services.AddSingleton<TokenProvider>();
 
-// Register AppDbContext (Pomelo MySQL/MariaDB)
+// JWT authentication
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+        };
+    });
+
+// EF Core + MySQL (Railway)
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    // Easiest: auto-detect server version from connection string
     var cs = builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseMySql(cs, ServerVersion.AutoDetect(cs));
     options.EnableSensitiveDataLogging()
            .LogTo(Console.WriteLine, LogLevel.Information);
-    // If you prefer explicit:
-    // options.UseMySql(cs, new MySqlServerVersion(new Version(8, 0, 36)));
-    // or for MariaDB:
-    // options.UseMySql(cs, new MariaDbServerVersion(new Version(10, 4, 32)));
+});
+
+// Global CORS
+const string AllowAll = "AllowAll";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(AllowAll, policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
 var app = builder.Build();
 
-// 2) Middleware pipeline
-    app.UseSwagger();
-    app.UseSwaggerUI();
+// ===== Middleware pipeline =====
+
+
+app.UseCors(AllowAll);
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-
-app.UseDefaultFiles();
-app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapFallbackToFile("/index.html");
+
+// app.UseDefaultFiles();
+// app.UseStaticFiles();
+// app.MapFallbackToFile("/index.html");
 
 app.Run();

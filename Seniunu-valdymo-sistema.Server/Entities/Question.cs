@@ -1,5 +1,8 @@
-﻿namespace Seniunu_valdymo_sistema.Server.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Seniunu_valdymo_sistema.Server.Entities
 {
+    [Table("questions")]
     public class Question
     {
         public int Id { get; set; }

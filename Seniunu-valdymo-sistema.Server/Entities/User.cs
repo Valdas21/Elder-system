@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Seniunu_valdymo_sistema.Server.Entities
 {
+    [Table("users")]
     public class User
     {
         [Key]

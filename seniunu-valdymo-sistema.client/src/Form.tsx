@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -13,6 +12,7 @@ import ElderAppBar from "./AppBars/ElderAppBar";
 import Footer from "./Footers/Footer";
 import { jwtDecode } from "jwt-decode";
 import Toolbar from "@mui/material/Toolbar";
+import Api from "./axiosnew";
 
 type Question = {
   id?: number | string;
@@ -91,7 +91,7 @@ function Form() {
       setError(null);
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const res = await axios.get<Question[]>(`/api/Forms/${id}/Questions`, { headers });
+        const res = await Api.get<Question[]>(`/api/Forms/${id}/Questions`, { headers });
         console.log("Fetched questions:", res.data);
         const qs = Array.isArray(res.data) ? res.data : [];
         if (mounted) {
@@ -124,7 +124,7 @@ function Form() {
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
         // Try a simple "exists" endpoint. Adjust to your API if different.
         // If your API returns 200 with { exists: boolean } or 204, adapt accordingly.
-        const res = await axios.get(`/api/Submissions/ByFormAndElder`, {
+        const res = await Api.get(`/api/Submissions/ByFormAndElder`, {
           params: { formId: id, elderId },
           headers,
         });
@@ -177,7 +177,7 @@ function Form() {
         Responses: responses,
       };
       console.log("Submitting payload:", payload);
-      await axios.post(`/api/Submissions`, payload, { headers });
+      await Api.post(`/api/Submissions`, payload, { headers });
       setSubmitSuccess("Submission successful.");
     } catch (e: any) {
       setSubmitError(e?.response?.data?.message || e?.message || "Failed to submit.");

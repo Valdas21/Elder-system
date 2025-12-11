@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import Api from "./axiosnew";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -121,7 +121,7 @@ function Submissions() {
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       // Adjust endpoint if your API uses a different pattern
-      await axios.delete(`/api/Submissions/${submissionId}`, { headers });
+      await Api.delete(`/api/Submissions/${submissionId}`, { headers });
       // Optimistically update UI
       setSubmissions(prev => prev.filter(x => getId(x) !== submissionId));
     } catch (e: any) {
@@ -149,7 +149,7 @@ function Submissions() {
         let res;
         if (isAdmin) {
           // Admin: fetch all submissions
-          res = await axios.get<Submission[]>(`/api/Submissions`, { headers });
+          res = await Api.get<Submission[]>(`/api/Submissions`, { headers });
           console.log("Fetched submissions for admin:", res.data);
         } else {
           // Elder: require elderId and fetch own submissions
@@ -158,7 +158,7 @@ function Submissions() {
             setLoading(false);
             return;
           }
-          res = await axios.get<Submission[]>(`/api/Submissions/ByElder`, {
+          res = await Api.get<Submission[]>(`/api/Submissions/ByElder`, {
             params: { elderId },
             headers,
           });
@@ -194,7 +194,7 @@ function Submissions() {
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
         const results = await Promise.allSettled(
-          missing.map(fid => axios.get<Form>(`/api/Forms/${fid}`, { headers }))
+          missing.map(fid => Api.get<Form>(`/api/Forms/${fid}`, { headers }))
         );
         if (cancelled) return;
         const next: Record<number, Form> = {};

@@ -5,7 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import axios from 'axios';
+import Api from './axiosnew';
 import AppBar from "./AppBars/AnonymousAppBar";
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -66,7 +66,7 @@ function Register() {
 
     try {
       const payload = { ...formState };
-      await axios.post('/api/Users/register', payload);
+      await Api.post('/api/Users/register', payload);
       setSuccessMsg('Registracija išsiųsta sėkmingai.');
       setFormState(initialFormState);
     } catch (error: any) {

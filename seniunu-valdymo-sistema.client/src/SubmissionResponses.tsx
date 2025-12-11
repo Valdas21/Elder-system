@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import Api from "./axiosnew";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -82,7 +82,7 @@ function SubmissionResponses() {
           decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ??
           decoded["nameid"] ??
           decoded["userId"];
-        const res = await axios.get<ApiResponseItem[]>(
+        const res = await Api.get<ApiResponseItem[]>(
           `/api/Submissions/${submissionId}/Responses`,
           { params: { elderId: rawElderId }, headers }
         );
@@ -132,7 +132,7 @@ function SubmissionResponses() {
         })),
       };
 
-      await axios.put(`/api/Submissions/${submissionId}`, payload, { headers });
+      await Api.put(`/api/Submissions/${submissionId}`, payload, { headers });
       setSaveSuccess("Updates saved.");
       // sync local responses with edited values
       setResponses((prev) =>

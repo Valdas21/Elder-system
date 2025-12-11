@@ -4,6 +4,7 @@ using Seniunu_valdymo_sistema.Server.Entities;
 using Seniunu_valdymo_sistema.Server.DTO;
 using Seniunu_valdymo_sistema.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 
 namespace Seniunu_valdymo_sistema.Server.Controllers
 {
@@ -12,11 +13,12 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
     public class UsersController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _config;
 
-
-        public UsersController(AppDbContext context)
+        public UsersController(AppDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         [HttpPost("register")]
@@ -101,6 +103,25 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
 
             return Ok(token);
         }
+        [HttpGet("dbtest")]
+        public IActionResult DbTest()
+        {
+            try
+            {
+                var cs = _config.GetConnectionString("DefaultConnection");
+
+                using (var conn = new MySqlConnection(cs))
+                {
+                    conn.Open();
+                    return Ok("Connection OK: " + conn.ServerVersion);
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.ToString());
+            }
+        }
+
 
     }
 }

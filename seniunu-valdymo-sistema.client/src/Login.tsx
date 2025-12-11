@@ -5,7 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import axios from 'axios';
+import Api from './axiosnew';
 import AppBar from "./AppBars/AnonymousAppBar";
 import Footer from "./Footers/Footer";
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
@@ -55,7 +55,8 @@ function Login() {
 
     try {
       console.log('Submitting form:', formState);
-      const response = await axios.post<LoginResponse>('/api/Users/login', formState);
+      console.log(import.meta.env.VITE_API_URL)
+      const response = await Api.post<LoginResponse>('/api/Users/login', formState);
       const token = (response.data as any)?.token ?? (response.data as any);
       if (!token || typeof token !== 'string') {
         throw new Error('Invalid token response');

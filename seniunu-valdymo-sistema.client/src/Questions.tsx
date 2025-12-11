@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import Api from "./axiosnew";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -55,7 +55,7 @@ function Questions() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get<Question[]>("/api/Questions", { headers });
+      const res = await Api.get<Question[]>("/api/Questions", { headers });
       setQuestions(Array.isArray(res.data) ? res.data : []);
     } catch (e: any) {
       setError(e?.message || "Failed to load questions.");
@@ -76,7 +76,7 @@ function Questions() {
   const handleCreate = async () => {
     if (!isAdmin || !newText.trim()) return;
     try {
-      await axios.post("/api/Questions", { text: newText.trim() }, { headers });
+      await Api.post("/api/Questions", { text: newText.trim() }, { headers });
       setNewText("");
       loadQuestions();
     } catch (e: any) {
@@ -98,7 +98,7 @@ function Questions() {
     }
 
     try {
-      await axios.delete("/api/Questions", {
+      await Api.delete("/api/Questions", {
         params: { id: idNum },
         headers,
       });
