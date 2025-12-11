@@ -81,6 +81,11 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
                 _context.Admins.Any(a => a.Id == user.Id) ? "admin" :
                 _context.Elders.Any(e => e.Id == user.Id) ? "elder" :
                 "user";
+            int course = 0;
+            if (role == "elder")
+            {
+                course = await _context.Elders.Where(e => e.Id == user.Id).Select(e => e.Course).FirstOrDefaultAsync();
+            }
 
             var resp = new LoginResponse
             {
@@ -88,7 +93,8 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
                 Email = user.Email,
                 FirstName = user.Name,
                 LastName = user.LastName,
-                Role = role
+                Role = role,
+                Course = course
             };
 
             string token = tokenProvider.Create(resp);

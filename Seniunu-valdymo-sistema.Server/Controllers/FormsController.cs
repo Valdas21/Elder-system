@@ -43,7 +43,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Question>>> GetFormQuestions(int id)
         {
-            var questions = await _context.FormQuestions.Where(fq => fq.FkFormId == id).Select(q => q.Question.Text).ToListAsync();
+            var questions = await _context.FormQuestions.Where(fq => fq.FkFormId == id).Select(q => new { q.Question.Text, q.Id }).ToListAsync();
             if (questions == null || questions.Count == 0)
                 return NotFound("No questions found for the specified form.");
             return Ok(questions);

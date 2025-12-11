@@ -9,21 +9,32 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class SubmissionController : Controller
+    public class SubmissionsController : Controller
     {
         private readonly AppDbContext _context;
-        public SubmissionController(AppDbContext context)
+        public SubmissionsController(AppDbContext context)
         {
             _context = context;
         }
         [HttpGet("{id}/Responses")]
         [Authorize(Roles = "elder,admin")]
-        public async Task<ActionResult<IEnumerable<Response>>> GetSubmissionResponses(int id)
+        public async Task<ActionResult<IEnumerable<Response>>> GetSubmissionResponses(int id, [FromQuery] int elderId)
         {
-            var responses = await _context.Responses.Where(r => r.FkSubmissionId == id).ToListAsync();
+            var responses = await _context.Responses.Where(r => r.FkSubmissionId == id).Include(fq=>fq.FormQuestion).ThenInclude(q=>q.Question).ToListAsync();
             if (responses == null || responses.Count == 0)
                 return NotFound("No responses found for the specified submission.");
             return Ok(responses);
+        }
+        [HttpGet]
+        [Authorize(Roles ="admin")]
+        public async Task<ActionResult<IEnumerable<Submission>>> GetSubmissions()
+        {
+            var submissions = await _context.Submissions.Include(r=> r.Responses).ToListAsync();
+            if(submissions.Count == 0)
+            {
+                return NotFound("No submissions");
+            }
+            return Ok(submissions);
         }
         [HttpGet("{id}")]
         [Authorize(Roles = "admin,elder")]
@@ -44,6 +55,11 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             if (request == null)
             {
                 return BadRequest("Invalid submission data.");
+            }
+            bool anySubmission = await _context.Submissions.Where(f => f.FkElderId == request.FkElderId && f.FkFormId == request.FkFormId).AnyAsync();
+            if (anySubmission)
+            {
+                return BadRequest("Form already filtered by this elder");
             }
             var submission = new Submission
             {
@@ -152,6 +168,48 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
 
 
             return Ok("Submission deleted successfully.");
+        }
+
+        [HttpGet("ByFormAndElder")]
+        [Authorize(Roles = "admin,elder")]
+        public async Task<ActionResult<IEnumerable<Submission>>> GetSubmissionsByFormAndElder([FromQuery] int formId, [FromQuery] int elderId)
+        {
+            IQueryable<Submission> query = _context.Submissions.Include(r => r.Responses).AsQueryable();
+
+
+            query = query.Where(s => s.FkFormId == formId);
+
+
+            query = query.Where(s => s.FkElderId == elderId);
+
+            var submissions = await query
+                .OrderByDescending(s => s.FillDate)
+                .ToListAsync();
+
+
+            if (submissions == null || submissions.Count == 0)
+                return NotFound("No submissions found for the specified filter.");
+
+            return Ok(submissions);
+        }
+        [HttpGet("ByElder")]
+        [Authorize(Roles = "admin,elder")]
+        public async Task<ActionResult<IEnumerable<Submission>>> GetSubmissionsByElder([FromQuery] int elderId)
+        {
+            IQueryable<Submission> query = _context.Submissions.Include(r => r.Responses).AsQueryable();
+
+
+            query = query.Where(s => s.FkElderId == elderId);
+
+            var submissions = await query
+                .OrderByDescending(s => s.FillDate)
+                .ToListAsync();
+
+
+            if (submissions == null || submissions.Count == 0)
+                return NotFound("No submissions found for the specified filter.");
+
+            return Ok(submissions);
         }
     }
 }

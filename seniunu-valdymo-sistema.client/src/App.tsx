@@ -1,68 +1,31 @@
-import { useEffect, useState } from 'react';
-import './App.css';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import axios from 'axios';
-
-interface RegistrationFormProps {
-    name: string;
-    surname: string;
-    email: string;
-    password: string;
-}
-const initialFormState: RegistrationFormProps = {
-    name: '',
-    surname: '',
-    email: '',
-    password: ''
-};
+import { Routes, Route} from "react-router-dom";
+import LandingPage from "./LandingPage";
+import Register from "./Register";
+import Login from "./Login";
+import Elder from "./Elder";
+import Forms from "./Forms";
+import Form from "./Form";
+import Submissions from "./Submissions";
+import SubmissionResponses from "./SubmissionResponses";
+import AdminDashboard from "./AdminDashboard";
+import Questions from "./Questions";
 
 
 function App() {
-    const [formState, setFormState] = useState<RegistrationFormProps>(initialFormState);
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormState({ ...formState, [name]: value });
-    };
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await axios.post('/api/register', formState);
-        } catch (error) {
-            console.error('Registration failed:', error);
-        }
-    }
-
-    return (
-        <div>
-            <Card>
-                <CardContent>
-                    <Typography variant="h3" id="registration">Registracija</Typography>
-                    <Typography margin={2}>Užpildykite visus registracijos laukus</Typography>
-                    <form>
-                        <div>
-                            <TextField margin='normal' label="Vardas" required value={formState.name} onChange={handleInputChange} />
-                        </div>
-                        <>
-                        <TextField margin='normal' label="Pavardė" required value={formState.surname} onChange={handleInputChange} />
-                        </>
-                        <div>
-                            <TextField margin='normal' type="email" label="El. paštas" required value={formState.email} onChange={handleInputChange} />
-                        </div>
-                        <div>
-                            <TextField margin='normal' label="Slaptažodis" type="password" required value={formState.password} onChange={handleInputChange} />
-                        </div>
-                        <Button  variant="contained" color="primary">Registruotis</Button>
-                    </form>
-                </CardContent>
-            </Card>
-        </div>
-    );
-        
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/Register" element={<Register />} />
+      <Route path="/Login" element={<Login />} />
+      <Route path="/Elder" element={<Elder />} />
+      <Route path="/Forms" element={<Forms />} />
+      <Route path="/Form/:id" element={<Form />} />
+      <Route path="/Submissions" element={<Submissions />} />
+      <Route path="/Submissions/:id/Responses" element={<SubmissionResponses />} />
+      <Route path="/Admin" element={<AdminDashboard />} />
+      <Route path="/Questions" element={<Questions />} />
+    </Routes>
+  );
 }
 
 export default App;
