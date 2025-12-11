@@ -25,6 +25,17 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
                 return NotFound("No responses found for the specified submission.");
             return Ok(responses);
         }
+        [HttpGet]
+        [Authorize(Roles ="admin")]
+        public async Task<ActionResult<IEnumerable<Submission>>> GetSubmissions()
+        {
+            var submissions = await _context.Submissions.Include(r=> r.Responses).ToListAsync();
+            if(submissions.Count == 0)
+            {
+                return NotFound("No submissions");
+            }
+            return Ok(submissions);
+        }
         [HttpGet("{id}")]
         [Authorize(Roles = "admin,elder")]
         public async Task<ActionResult> GetSubmission(int id)

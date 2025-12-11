@@ -12,6 +12,7 @@ import Button from "@mui/material/Button";
 import ElderAppBar from "./AppBars/ElderAppBar";
 import Footer from "./Footers/Footer";
 import { jwtDecode } from "jwt-decode";
+import Toolbar from "@mui/material/Toolbar";
 
 type Question = {
   id?: number | string;
@@ -39,6 +40,18 @@ function Form() {
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   const token = useMemo(() => localStorage.getItem("jwtToken") || "", []);
+  const role = useMemo(() => {
+    if (!token) return undefined;
+    try {
+      const d: any = jwtDecode(token);
+      return (d["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ?? d["role"]) as string | undefined;
+    } catch {
+      return undefined;
+    }
+  }, [token]);
+
+  const isElder = role?.toLowerCase() === "elder";
+  const isEditingAllowed = isActive && isElder && !hasSubmitted;
 
   // Helper: get elder id from token (prefer numeric id)
   const elderId = useMemo(() => {
@@ -136,8 +149,8 @@ function Form() {
   };
 
   const handleSubmit = async () => {
-    // Prevent submitting if already submitted
-    if (hasSubmitted) return;
+    // Prevent submitting if not elder or already submitted or inactive
+    if (!isEditingAllowed) return;
     if (!id) return;
     setSubmitting(true);
     setSubmitError(null);
@@ -176,7 +189,9 @@ function Form() {
   return (
     <>
       <ElderAppBar />
-      <Container maxWidth="xl" sx={{ mt: 12, mb: 6 }}>
+      {/* Spacer so content starts below the fixed AppBar */}
+      <Toolbar />
+      <Container maxWidth="xl" sx={{ mb: 6 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Typography variant="h4" fontWeight="bold">
             Form {id}
@@ -207,6 +222,11 @@ function Form() {
                       This form is inactive. Submissions are disabled.
                     </Alert>
                   )}
+                  {!isElder && (
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                      Only elders can fill and submit forms. Admins are not allowed.
+                    </Alert>
+                  )}
                   {hasSubmitted && (
                     <Alert severity="info" sx={{ mb: 2 }}>
                       You have already submitted this form. Editing is disabled. Check submissions instead.
@@ -228,7 +248,7 @@ function Form() {
                             type="text"
                             value={answers[qid] ?? ""}
                             onChange={(e) => handleAnswerChange(qid, e.target.value)}
-                            disabled={!isActive || hasSubmitted}
+                            disabled={!isEditingAllowed}
                             style={{
                               width: "100%",
                               padding: "10px",
@@ -244,7 +264,7 @@ function Form() {
                   <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
                     <Button
                       variant="contained"
-                      disabled={!isActive || hasSubmitted || submitting}
+                      disabled={!isEditingAllowed || submitting}
                       onClick={handleSubmit}
                     >
                       {submitting ? "Submitting..." : "Submit"}

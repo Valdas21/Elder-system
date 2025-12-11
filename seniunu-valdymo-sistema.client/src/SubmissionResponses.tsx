@@ -35,6 +35,23 @@ function SubmissionResponses() {
   const editRequested = !!(location.state as { edit?: boolean } | null)?.edit;
 
   const token = useMemo(() => localStorage.getItem("jwtToken") || "", []);
+  // Derive isAdmin from token roles
+  const isAdmin = useMemo(() => {
+    if (!token) return false;
+    try {
+      const decoded: any = jwtDecode(token);
+      const roles =
+        decoded["roles"] ??
+        decoded["role"] ??
+        decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ??
+        [];
+      const rolesArr = Array.isArray(roles) ? roles : [roles].filter(Boolean);
+      return rolesArr.some((r: string) => r.toLowerCase() === "admin");
+    } catch {
+      return false;
+    }
+  }, [token]);
+
   const [responses, setResponses] = useState<ApiResponseItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +161,8 @@ function SubmissionResponses() {
             <Button variant="outlined" onClick={() => navigate(-1)}>
               Back
             </Button>
-            {!loading && !error && responses.length > 0 && (
+            {/* Hide edit controls for admin */}
+            {!isAdmin && !loading && !error && responses.length > 0 && (
               editMode ? (
                 <>
                   <Button variant="contained" disabled={saving} onClick={handleSave}>
