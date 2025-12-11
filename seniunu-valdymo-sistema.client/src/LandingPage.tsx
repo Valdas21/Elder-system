@@ -1,13 +1,11 @@
-import React from "react";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import Paper from "@mui/material/Paper";
 import { useNavigate } from "react-router-dom";
 import AppBar from "./AppBars/AnonymousAppBar";
 import Footer from "./Footers/Footer";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid"; // replace Unstable_Grid2
 import Toolbar from "@mui/material/Toolbar";
 import { useTheme } from "@mui/material/styles";
 import adminHero from "./assets/admin-hero.jpg";
@@ -39,13 +37,13 @@ function LandingPage() {
           }}
         >
           {/* Centered text block */}
-          <Grid item xs={12} md={8} lg={6}>
+          <Grid>
             <Box sx={{ mx: "auto", maxWidth: 720 }}>
               <Typography variant="h2" sx={{ fontWeight: 800, mb: 2 }}>
                 Welcome to Elder system
               </Typography>
               <Typography variant="body1" sx={{ mb: 3, color: "text.secondary" }}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.
+                The place where dreams come true.
               </Typography>
               <Box sx={{ display: "flex", justifyContent: "center" }}>
                 <Button variant="contained" color="primary" onClick={() => navigate("/Register")}>
@@ -56,7 +54,7 @@ function LandingPage() {
           </Grid>
 
           {/* Centered image block */}
-          <Grid item xs={12} md={8} lg={6}>
+          <Grid>
             <Box
               sx={{
                 mx: "auto",

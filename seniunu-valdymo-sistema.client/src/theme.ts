@@ -2,10 +2,8 @@ import { createTheme } from "@mui/material/styles";
 import { alpha } from "@mui/material/styles";
 
 const ink = "#0F172A";
-const dusk = "#111827";
 const plum = "#7C3AED";
 const coral = "#F97316";
-const fog = "#E5E7EB";
 const mist = "#F3F4F6";
 const leaf = "#10B981";
 

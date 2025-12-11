@@ -4,10 +4,8 @@ import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import AppBar from "./AppBars/ElderAppBar";
 import Footer from "./Footers/Footer";
@@ -29,7 +27,9 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
+import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
 
 type FormItem = {
   id?: number | string;
@@ -468,20 +468,18 @@ function Forms() {
           </Typography>
           <Card variant="outlined">
             <List dense sx={{ maxHeight: 300, overflow: "auto" }}>
-              {questions.map(q => (
-                <ListItem
-                  key={q.id}
-                  button
-                  onClick={() => toggleQuestion(q.id)}
-                  secondaryAction={
+              {questions.map((q) => (
+                <ListItem key={q.id} disablePadding>
+                  <ListItemButton onClick={() => toggleQuestion(q.id)}>
+                    <ListItemText primary={`#${q.id}`} secondary={q.text ?? ""} />
+                  </ListItemButton>
+                  <ListItemSecondaryAction>
                     <Checkbox
                       edge="end"
-                      onChange={() => toggleQuestion(q.id)}
                       checked={selectedQuestionIds.includes(q.id)}
+                      onChange={() => toggleQuestion(q.id)}
                     />
-                  }
-                >
-                  <ListItemText primary={`#${q.id}`} secondary={q.text ?? ""} />
+                  </ListItemSecondaryAction>
                 </ListItem>
               ))}
             </List>

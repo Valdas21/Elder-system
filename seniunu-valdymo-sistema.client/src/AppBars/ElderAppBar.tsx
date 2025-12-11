@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -14,7 +14,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
-import { jwtDecode } from "jwt-decode";
+
 
 function ElderAppBar() {
   const theme = useTheme();
@@ -32,26 +32,6 @@ function ElderAppBar() {
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
     navigate("/Login");
-  };
-
-  const handleDashboard = () => {
-    const token = localStorage.getItem("jwtToken") || "";
-    let role: string | undefined;
-    if (token) {
-      try {
-        const d: any = jwtDecode(token);
-        role =
-          d["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ??
-          d["role"];
-      } catch {
-        // invalid token, fall back
-      }
-    }
-    if (role?.toLowerCase() === "admin") {
-      navigate("/Admin");
-    } else {
-      navigate("/Elder");
-    }
   };
 
   return (

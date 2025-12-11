@@ -64,7 +64,7 @@ function Login() {
       localStorage.setItem('jwtToken', token);
 
       const decoded = jwtDecode<JwtPayload>(token);
-      const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      const role = (decoded as any)['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
       setSuccessMsg('Sėkmingai prisijungėte.');
 
       // small delay so user can see success

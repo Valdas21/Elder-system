@@ -75,11 +75,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 
 // 2) Middleware pipeline
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
 
