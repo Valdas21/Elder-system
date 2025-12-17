@@ -29,8 +29,7 @@ type Question = {
 
 function Questions() {
   const navigate = useNavigate();
-  const token = useMemo(() => localStorage.getItem("jwtToken") || "", []);
-  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+  const token = useMemo(() => localStorage.getItem("accessToken") || "", []);
 
   const role = useMemo(() => {
     if (!token) return undefined;
@@ -55,7 +54,7 @@ function Questions() {
     setLoading(true);
     setError(null);
     try {
-      const res = await Api.get<Question[]>("/api/Questions", { headers });
+      const res = await Api.get<Question[]>("/api/Questions");
       setQuestions(Array.isArray(res.data) ? res.data : []);
     } catch (e: any) {
       setError(e?.message || "Failed to load questions.");
@@ -76,7 +75,7 @@ function Questions() {
   const handleCreate = async () => {
     if (!isAdmin || !newText.trim()) return;
     try {
-      await Api.post("/api/Questions", { text: newText.trim() }, { headers });
+      await Api.post("/api/Questions", { text: newText.trim() });
       setNewText("");
       loadQuestions();
     } catch (e: any) {
@@ -98,10 +97,7 @@ function Questions() {
     }
 
     try {
-      await Api.delete("/api/Questions", {
-        params: { id: idNum },
-        headers,
-      });
+      await Api.delete(`/api/Questions/${id}`);
       setQuestions(qs => qs.filter(q => Number(q.id) !== idNum));
     } catch (e: any) {
       const msg =

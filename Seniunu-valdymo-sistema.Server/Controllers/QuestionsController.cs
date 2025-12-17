@@ -35,7 +35,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
 
             return CreatedAtAction("CreateQuestion", question);
         }
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteQuestion(int id)
         {

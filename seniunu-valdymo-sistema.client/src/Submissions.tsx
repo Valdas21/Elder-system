@@ -44,7 +44,7 @@ type Form = {
 function Submissions() {
   const navigate = useNavigate();
 
-  const token = useMemo(() => localStorage.getItem("jwtToken") || "", []);
+  const token = useMemo(() => localStorage.getItem("accessToken") || "", []);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,9 +119,8 @@ function Submissions() {
     if (!ok) return;
 
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       // Adjust endpoint if your API uses a different pattern
-      await Api.delete(`/api/Submissions/${submissionId}`, { headers });
+      await Api.delete(`/api/Submissions/${submissionId}`);
       // Optimistically update UI
       setSubmissions(prev => prev.filter(x => getId(x) !== submissionId));
     } catch (e: any) {
@@ -144,12 +143,12 @@ function Submissions() {
       setLoading(true);
       setError(null);
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+        
 
         let res;
         if (isAdmin) {
           // Admin: fetch all submissions
-          res = await Api.get<Submission[]>(`/api/Submissions`, { headers });
+          res = await Api.get<Submission[]>(`/api/Submissions`);
           console.log("Fetched submissions for admin:", res.data);
         } else {
           // Elder: require elderId and fetch own submissions
@@ -159,8 +158,7 @@ function Submissions() {
             return;
           }
           res = await Api.get<Submission[]>(`/api/Submissions/ByElder`, {
-            params: { elderId },
-            headers,
+            params: { elderId }
           });
         }
 
@@ -192,9 +190,8 @@ function Submissions() {
     let cancelled = false;
     (async () => {
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
         const results = await Promise.allSettled(
-          missing.map(fid => Api.get<Form>(`/api/Forms/${fid}`, { headers }))
+          missing.map(fid => Api.get<Form>(`/api/Forms/${fid}`))
         );
         if (cancelled) return;
         const next: Record<number, Form> = {};

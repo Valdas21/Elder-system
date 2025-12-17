@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Seniunu_valdymo_sistema.Server.Entities;
 using Seniunu_valdymo_sistema.Server.DTO;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Seniunu_valdymo_sistema.Server.Controllers
 {
@@ -16,13 +17,31 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         {
             _context = context;
         }
+        private int GetUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        private bool IsAdmin() => User.IsInRole("admin");
+
         [HttpGet("{id}/Responses")]
         [Authorize(Roles = "elder,admin")]
-        public async Task<ActionResult<IEnumerable<Response>>> GetSubmissionResponses(int id, [FromQuery] int elderId)
+        public async Task<ActionResult<IEnumerable<Response>>> GetSubmissionResponses(int id)
         {
-            var responses = await _context.Responses.Where(r => r.FkSubmissionId == id).Include(fq=>fq.FormQuestion).ThenInclude(q=>q.Question).ToListAsync();
-            if (responses == null || responses.Count == 0)
-                return NotFound("No responses found for the specified submission.");
+            var submission = await _context.Submissions
+        .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (submission == null)
+                return NotFound("Submission not found.");
+
+            if (!IsAdmin() && submission.FkElderId != GetUserId())
+                return Forbid();
+
+            var responses = await _context.Responses
+                .Where(r => r.FkSubmissionId == id)
+                .Include(r => r.FormQuestion)
+                .ThenInclude(fq => fq.Question)
+                .ToListAsync();
+
+            if (responses.Count == 0)
+                return NotFound("No responses found.");
+
             return Ok(responses);
         }
         [HttpGet]
@@ -41,10 +60,11 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         public async Task<ActionResult> GetSubmission(int id)
         {
             var submission = await _context.Submissions.FindAsync(id);
-            if (submission == null)
-            {
-                return NotFound("Submission not found.");
-            }
+            if (submission == null) return NotFound();
+
+            if (!IsAdmin() && submission.FkElderId != GetUserId())
+                return Forbid();
+
             return Ok(submission);
         }
 
@@ -52,11 +72,12 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         [Authorize(Roles = "elder")]
         public async Task<ActionResult<Submission>> CreateSubmission(CreateSubmissionRequest request)
         {
+            var elderId = GetUserId();
             if (request == null)
             {
                 return BadRequest("Invalid submission data.");
             }
-            bool anySubmission = await _context.Submissions.Where(f => f.FkElderId == request.FkElderId && f.FkFormId == request.FkFormId).AnyAsync();
+            bool anySubmission = await _context.Submissions.Where(f => f.FkElderId == elderId && f.FkFormId == request.FkFormId).AnyAsync();
             if (anySubmission)
             {
                 return BadRequest("Form already filtered by this elder");
@@ -65,7 +86,7 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
             {
                 FillDate = DateTime.UtcNow,
                 FkFormId = request.FkFormId,
-                FkElderId = request.FkElderId
+                FkElderId = elderId
             };
             _context.Submissions.Add(submission);
             await _context.SaveChangesAsync();
@@ -92,9 +113,12 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         {
             var submission = await _context.Submissions.FindAsync(id);
             if (submission is null) return NotFound("Submission not found.");
+            if (submission.FkElderId != GetUserId())
+                return Forbid();
             var isFormNotActive = !_context.Forms.Any(f => f.Id == submission.FkFormId && f.Active);
             if (isFormNotActive)
                 return BadRequest("Cannot update submission for an inactive form.");
+
             // Validate that every provided FormQuestion belongs to this submission's Form
             if (request.Responses is not null && request.Responses.Count > 0)
             {
@@ -153,8 +177,10 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         public async Task<IActionResult> DeleteSubmission(int id)
         {
             var submission = _context.Submissions.FirstOrDefault(s => s.Id == id);
-            if (submission is null) return NotFound("Submission not found.");
 
+            if (submission is null) return NotFound("Submission not found.");
+            if (submission.FkElderId != GetUserId())
+                return Forbid();
             // If you don't have FK cascade in DB/EF, remove responses manually
             var responses = _context.Responses
                 .Where(r => r.FkSubmissionId == id)
@@ -174,20 +200,18 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         [Authorize(Roles = "admin,elder")]
         public async Task<ActionResult<IEnumerable<Submission>>> GetSubmissionsByFormAndElder([FromQuery] int formId, [FromQuery] int elderId)
         {
-            IQueryable<Submission> query = _context.Submissions.Include(r => r.Responses).AsQueryable();
+            if (!IsAdmin() && elderId != GetUserId())
+                return Forbid();
 
-
-            query = query.Where(s => s.FkFormId == formId);
-
-
-            query = query.Where(s => s.FkElderId == elderId);
+            IQueryable<Submission> query = _context.Submissions
+                .Include(s => s.Responses)
+                .Where(s => s.FkFormId == formId && s.FkElderId == elderId);
 
             var submissions = await query
                 .OrderByDescending(s => s.FillDate)
                 .ToListAsync();
 
-
-            if (submissions == null || submissions.Count == 0)
+            if (submissions.Count == 0)
                 return NotFound("No submissions found for the specified filter.");
 
             return Ok(submissions);
@@ -196,17 +220,19 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         [Authorize(Roles = "admin,elder")]
         public async Task<ActionResult<IEnumerable<Submission>>> GetSubmissionsByElder([FromQuery] int elderId)
         {
-            IQueryable<Submission> query = _context.Submissions.Include(r => r.Responses).AsQueryable();
+            // Elders can only request their own submissions
+            if (!IsAdmin() && elderId != GetUserId())
+                return Forbid();
 
-
-            query = query.Where(s => s.FkElderId == elderId);
+            IQueryable<Submission> query = _context.Submissions
+                .Include(s => s.Responses)
+                .Where(s => s.FkElderId == elderId);
 
             var submissions = await query
                 .OrderByDescending(s => s.FillDate)
                 .ToListAsync();
 
-
-            if (submissions == null || submissions.Count == 0)
+            if (submissions.Count == 0)
                 return NotFound("No submissions found for the specified filter.");
 
             return Ok(submissions);

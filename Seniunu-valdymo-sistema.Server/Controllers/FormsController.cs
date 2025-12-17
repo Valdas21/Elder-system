@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using Seniunu_valdymo_sistema.Server.DTO;
 using Seniunu_valdymo_sistema.Server.Entities;
+using System.Security.Claims;
 
 namespace Seniunu_valdymo_sistema.Server.Controllers
 {
@@ -17,6 +18,8 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         {
             _context = context;
         }
+        private int GetUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Form>>> GetForms()
@@ -68,17 +71,17 @@ namespace Seniunu_valdymo_sistema.Server.Controllers
         [Authorize(Roles = "admin")]
         public async Task<ActionResult<Form>> CreateForm(CreateFormRequest request)
         {
-            if (request == null || request.FkAdminId <= 0)
-                return BadRequest("Invalid form data.");
+            var adminId = GetUserId(); // from token
+
+            var adminExists = await _context.Admins.AnyAsync(a => a.Id == adminId);
+            if (!adminExists) return BadRequest("Admin does not exist.");
+
 
             if (request.Course <= 0 || request.Course > 4)
                 return BadRequest("Invalid selected Course");
 
-            var adminExists = _context.Admins.Any(a => a.Id == request.FkAdminId);
-            if (!adminExists)
-                return BadRequest("Admin does not exist.");
 
-            var form = new Form { Active = request.Active, Course = request.Course, FkAdminId = request.FkAdminId, CreateDate = request.CreateDate };
+            var form = new Form { Active = request.Active, Course = request.Course, FkAdminId = adminId, CreateDate = request.CreateDate };
             _context.Forms.Add(form);
             if(request.QuestionIds?.Count > 0)
             {

@@ -48,7 +48,7 @@ function Forms() {
 
   // Derive isAdmin and adminId
   const { token, role, elderCourse } = useMemo(() => {
-    const t = localStorage.getItem("jwtToken") || "";
+    const t = localStorage.getItem("accessToken") || "";
 
     const coerceCourse = (val: unknown): number | undefined => {
       if (val == null) return undefined;
@@ -106,8 +106,7 @@ function Forms() {
       setLoading(true);
       setError(null);
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const res = await Api.get<FormItem[]>("/api/Forms", { headers });
+        const res = await Api.get<FormItem[]>("/api/Forms");
 
         const data = res.data;
         console.log("Fetched forms:", data);
@@ -346,8 +345,7 @@ function Forms() {
     setCreateDate(new Date().toISOString().slice(0, 10));
     setCreateOpen(true);
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      const res = await Api.get<Array<{ id: number; text?: string }>>("/api/Questions", { headers });
+      const res = await Api.get<Array<{ id: number; text?: string }>>("/api/Questions");
       setQuestions(Array.isArray(res.data) ? res.data : []);
     } catch (e: any) {
       setCreateError(e?.message || "Failed to load questions.");
@@ -373,7 +371,6 @@ function Forms() {
     setCreating(true);
     setCreateError(null);
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       const payload = {
         FkAdminId: adminId,
         Course: Number(courseNum),
@@ -381,7 +378,7 @@ function Forms() {
         CreateDate: new Date(createDate).toISOString(),
         QuestionIds: selectedQuestionIds,
       };
-      const res = await Api.post<FormItem>("/api/Forms", payload, { headers });
+      const res = await Api.post<FormItem>("/api/Forms", payload);
       const created = res.data;
       setForms(prev => [created, ...prev]);
       setCreateOpen(false);

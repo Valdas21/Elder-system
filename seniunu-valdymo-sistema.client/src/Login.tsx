@@ -18,7 +18,8 @@ import Snackbar from "@mui/material/Snackbar";
 
 
 interface LoginResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 interface LoginFormProps {
@@ -57,14 +58,13 @@ function Login() {
       console.log('Submitting form:', formState);
       console.log(import.meta.env.VITE_API_URL)
       const response = await Api.post<LoginResponse>('/api/Users/login', formState);
-      const token = (response.data as any)?.token ?? (response.data as any);
-      if (!token || typeof token !== 'string') {
-        throw new Error('Invalid token response');
-      }
+      
+      
 
-      localStorage.setItem('jwtToken', token);
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
 
-      const decoded = jwtDecode<JwtPayload>(token);
+      const decoded = jwtDecode<JwtPayload>(response.data.accessToken);
       const role = (decoded as any)['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
       setSuccessMsg('Sėkmingai prisijungėte.');
 

@@ -19,7 +19,7 @@ function Elder() {
   const [decoded, setDecoded] = useState<DecodedToken | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       navigate("/Login");
       return;

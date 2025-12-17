@@ -34,7 +34,7 @@ function SubmissionResponses() {
   const location = useLocation();
   const editRequested = !!(location.state as { edit?: boolean } | null)?.edit;
 
-  const token = useMemo(() => localStorage.getItem("jwtToken") || "", []);
+  const token = useMemo(() => localStorage.getItem("accessToken") || "", []);
   // Derive isAdmin from token roles
   const isAdmin = useMemo(() => {
     if (!token) return false;
@@ -75,17 +75,8 @@ function SubmissionResponses() {
       setLoading(true);
       setError(null);
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const decoded: any = jwtDecode(token);
-        const rawElderId =
-          decoded["sub"] ??
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ??
-          decoded["nameid"] ??
-          decoded["userId"];
         const res = await Api.get<ApiResponseItem[]>(
-          `/api/Submissions/${submissionId}/Responses`,
-          { params: { elderId: rawElderId }, headers }
-        );
+          `/api/Submissions/${submissionId}/Responses`,);
         if (mounted) {
           const data = Array.isArray(res.data) ? res.data : [];
           setResponses(data);
@@ -122,7 +113,6 @@ function SubmissionResponses() {
     setSaveSuccess(null);
     try {
       const submissionId = Number(submissionIdParam);
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
       // Build UpdateSubmissionRequest payload
       const payload = {
@@ -132,7 +122,7 @@ function SubmissionResponses() {
         })),
       };
 
-      await Api.put(`/api/Submissions/${submissionId}`, payload, { headers });
+      await Api.put(`/api/Submissions/${submissionId}`, payload);
       setSaveSuccess("Updates saved.");
       // sync local responses with edited values
       setResponses((prev) =>

@@ -39,7 +39,7 @@ function Form() {
   // Add: track if elder has already submitted this form
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
-  const token = useMemo(() => localStorage.getItem("jwtToken") || "", []);
+  const token = useMemo(() => localStorage.getItem("accessToken") || "", []);
   const role = useMemo(() => {
     if (!token) return undefined;
     try {
@@ -90,8 +90,7 @@ function Form() {
       setLoading(true);
       setError(null);
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const res = await Api.get<Question[]>(`/api/Forms/${id}/Questions`, { headers });
+        const res = await Api.get<Question[]>(`/api/Forms/${id}/Questions`);
         console.log("Fetched questions:", res.data);
         const qs = Array.isArray(res.data) ? res.data : [];
         if (mounted) {
@@ -121,12 +120,10 @@ function Form() {
     (async () => {
       if (!id || !elderId) return;
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
         // Try a simple "exists" endpoint. Adjust to your API if different.
         // If your API returns 200 with { exists: boolean } or 204, adapt accordingly.
         const res = await Api.get(`/api/Submissions/ByFormAndElder`, {
           params: { formId: id, elderId },
-          headers,
         });
         // Accept various response shapes
         const exists =
@@ -156,8 +153,6 @@ function Form() {
     setSubmitError(null);
     setSubmitSuccess(null);
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-
       // Build payload according to:
       // CreateSubmissionRequest { FkFormId, FkElderId, Responses: [{ FkFormQuestionId, Text }] }
       const fkFormId = Number(id);
@@ -177,7 +172,7 @@ function Form() {
         Responses: responses,
       };
       console.log("Submitting payload:", payload);
-      await Api.post(`/api/Submissions`, payload, { headers });
+      await Api.post(`/api/Submissions`, payload);
       setSubmitSuccess("Submission successful.");
     } catch (e: any) {
       setSubmitError(e?.response?.data?.message || e?.message || "Failed to submit.");

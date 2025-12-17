@@ -32,7 +32,8 @@ function ElderAppBar() {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     navigate("/Login");
   };
 

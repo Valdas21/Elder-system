@@ -16,6 +16,7 @@ namespace Seniunu_valdymo_sistema.Server
         public DbSet<Response> Responses { get; set; }
         public DbSet<FormQuestion> FormQuestions { get; set; }
         public DbSet<Submission> Submissions { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; } 
 
     }
 }
